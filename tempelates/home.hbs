@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <title>Hangman</title>
+    {{!-- <link rel="stylesheet" href="public/home.css"> --}}
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+    {{!-- <script src="src/script.js" charset="utf-8"></script> --}}
+    <style>
+    *,
+*:before,
+*:after
+{
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
+body
+{
+    font-family: 'Roboto Mono', monospace;
+    font-size: 28px;
+
+    color: lightgray;
+    background-color: #000;
+}
+
+main
+{
+    display: flex;
+
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+
+    flex-flow: row wrap;
+    justify-content: center;
+}
+
+.letter
+{
+    width: 1.7em;
+    height: 1.7em;
+    margin: 5px;
+    padding: 5px;
+
+    cursor: pointer;
+    text-align: center;
+
+    border: 3px solid gray;
+    border-radius: 15px;
+}
+
+.letter:hover
+{
+    color: white;
+    border: 3px solid white;
+    background-color: #222;
+}
+
+.reset
+{
+    font-size: 48px;
+
+    cursor: pointer;
+
+    color: green;
+}
+
+.reset:hover
+{
+    color: white;
+}
+
+.board
+{
+    font-size: 48px;
+
+    width: 100vw;
+    min-height: 60px;
+    margin-top: 50px;
+    margin-bottom: 50px;
+
+    text-align: center;
+}
+
+.field
+{
+  display: flex;
+  flex-flow: row wrap;
+    width: 45vw;
+    min-height: 280px;
+
+    text-align: center;
+}
+
+</style>
+</head>
+
+<body>
+    <main>
+        <section class="board" id="board"></section>
+        <section class="field" id="gallows">
+            <img src="https://t4.ftcdn.net/jpg/02/48/96/11/360_F_248961156_XeSISXFo6bcFUw830wpE2zPLxWGCl1u9.jpg" alt="hangman image">
+        </section>
+        <section class="field" id="alfabet"></section>
+    </main>
+</body>
+<script>
+    var sentence = 'Hello world';
+sentence = sentence.toUpperCase();
+
+var length = sentence.length;
+var mistakes = 0;
+
+var yes = new Audio('yes.wav');
+var no = new Audio('no.wav');
+
+var guess_sentence = '';
+
+for (var i = 0; i < length; i++)
+{
+    if (sentence.charAt(i) == ' ')
+    {
+        guess_sentence = guess_sentence + ' ';
+    }
+    else
+    {
+        guess_sentence = guess_sentence + '-';
+    }
+}
+
+function write_sentence()
+{
+    document.getElementById('board').innerHTML = guess_sentence;
+}
+
+document.addEventListener('DOMContentLoaded', start);
+
+var letters = new Array(26);
+
+for (var i = 0; i < letters.length; i++)
+{
+    letters[i] = String.fromCharCode(65 + i);
+}
+
+function start()
+{
+    var div_contents = '';
+    for (var i = 0; i < 26; i++)
+    {
+
+        var element = 'letter' + i;
+
+        div_contents = div_contents + '<div class="letter" onclick="check(' + i + ')" id="' + element + '">' + letters[i] + '</div>';
+    }
+    document.getElementById('alfabet').innerHTML = div_contents;
+    write_sentence();
+}
+
+String.prototype.ustawZnak = function(miejsce, znak)
+{
+    if (miejsce > this.length - 1)
+    {
+        return this.toString();
+    }
+    else
+    {
+        return this.substr(0, miejsce) + znak + this.substr(miejsce + 1);
+    }
+};
+
+function check(num)
+{
+
+    var trafiona = false;
+
+    for (i = 0; i < length; i++)
+    {
+        if (sentence.charAt(i) == letters[num])
+        {
+            guess_sentence = guess_sentence.ustawZnak(i, letters[num]);
+            trafiona = true;
+        }
+    }
+    if (trafiona === true)
+    {
+        yes.play();
+        var element = 'letter' + num;
+        document.getElementById(element).style.background = '#003300';
+        document.getElementById(element).style.color = '#00C000';
+        document.getElementById(element).style.border = '3px solid #00C000';
+        document.getElementById(element).style.cursor = 'default';
+        write_sentence();
+    }
+    else
+    {
+        no.play();
+        var element = 'letter' + num;
+        document.getElementById(element).style.background = '#330000';
+        document.getElementById(element).style.color = '#C00000';
+        document.getElementById(element).style.border = '3px solid #C00000';
+        document.getElementById(element).style.cursor = 'default';
+
+        document.getElementById(element).setAttribute('onclick', ';');
+
+        //mistake
+        mistakes++;
+        var image = 'img/s' + mistakes + '.jpg';
+        document.getElementById('gallows').innerHTML = '<img src="' + image + '" alt="">';
+    }
+
+    //win
+    if (sentence == guess_sentence)
+    {
+        document.getElementById('alfabet').innerHTML = 'That\'s right! Correct sentence: ' + sentence + '<br><br><span class="reset" onclick="location.reload()">AGAIN?</span>';
+    }
+
+    //lose
+    if (mistakes >= 9)
+    {
+        document.getElementById('alfabet').innerHTML = 'You lose! Correct sentence: ' + sentence + '<br><br><span class="reset" onclick="location.reload()">AGAIN?</span>';
+    }
+}
+</script>
+
+</html>
